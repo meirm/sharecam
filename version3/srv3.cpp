@@ -5,6 +5,8 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include<iostream>
+#include<chrono>
+#include<thread>
 
 #include "common.h"
 #define NOBUG 1
@@ -14,8 +16,8 @@
  * g++ -Wall  -c  srv3.cpp
  * g++ -Wall -o "srv3" srv3.o -I /usr/include/boost  `pkg-config --libs --cflags opencv` -std=gnu++11 -lrt -lboost_program_options  -pthread
  *
- * g++ -Wall  -c  srv3.cpp
- * g++ -o  srv3  -I /usr/local/opencv-2.4.13/include -O2 -g -Wall srv3.cpp -L /usr/local/opencv-2.4.13/lib -lopencv_core  -lopencv_imgcodecs -lopencv_videoio -lopencv_highgui -lopencv_video  -lopencv_photo  -std=gnu++11  -lboost_program_options -std=gnu++11 -lrt -pthread
+ * g++ -Wall  -c  srv3.cpp  -std=gnu++11
+ * g++ -o  srv3 srv3.o -I /usr/local/opencv-2.4.13/include -O2 -g -Wall -L /usr/local/opencv-2.4.13/lib -lopencv_core  -lopencv_imgcodecs -lopencv_videoio -lopencv_highgui -lopencv_video  -lopencv_photo  -std=gnu++11  -lboost_program_options -std=gnu++11 -lrt -pthread
  *
  * LD_LIBRARY_PATH=/usr/local/opencv-2.4.13/lib/ ./srv3 --video 0 --xres 1920 --yres 1080
  */
@@ -25,6 +27,7 @@ namespace po = boost::program_options;
 int videoport =0;
 int x=800;
 int y=600;
+int fps=30;
 
 void init_prog(int ac, char * av[] ){
 try {
@@ -34,6 +37,7 @@ try {
             ("video", po::value<int>(), "set video device <N>")
             ("xres", po::value<int>(), "x resolution")
             ("yres", po::value<int>(), "y resolution")
+            ("fps", po::value<int>(), "fps")
         ;
 
         po::variables_map vm;
@@ -59,13 +63,20 @@ try {
         } else {
             cout << "xres was not set. Using default\n";
         }
-        
         if (vm.count("yres")) {
             cout << "yres set to "
                  << vm["yres"].as<int>() << ".\n";
 		y=vm["yres"].as<int>();
         } else {
             cout << "yres was not set. Using default\n";
+	}
+        
+        if (vm.count("fps")) {
+            cout << "fps set to "
+                 << vm["fps"].as<int>() << ".\n";
+		fps=vm["fps"].as<int>();
+        } else {
+            cout << "fps was not set. Using default\n";
 	}
     }
     catch(exception& e) {
@@ -152,13 +163,11 @@ shared_image_header->handle[1]
     
   int flag = 1;
   // Spinning until 'q' key is down
+  int waitTime = 1000  / fps;
   while (true) {
+    this_thread::sleep_for(chrono::milliseconds(waitTime));
     // Capture the image and show
-    //capture_device.open(1);
     capture_device >> shared[ 1 - flag] ;
-    //shared[ 1 - flag].release();
-    
-    
 
     // Increment the buffPosition
     shared_image_header->buffPosition= 1 - flag;
