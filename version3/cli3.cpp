@@ -7,6 +7,11 @@
  * 
  * g++ -Wall  -c  cli3.cpp
  * g++ -Wall -o "cli3" cli3.o -I /usr/include/boost  `pkg-config --libs --cflags opencv` -std=gnu++11 -lrt -pthread
+ *
+ * g++ -Wall  -c  cli3.cpp
+ * g++ -o  cli3  -I /usr/local/opencv-2.4.13/include -O2 -g -Wall cli3.cpp -L /usr/local/opencv-2.4.13/lib -lopencv_core  -lopencv_imgcodecs -lopencv_videoio -lopencv_highgui -lopencv_video  -lopencv_photo  -std=gnu++11  -lboost_program_options -std=gnu++11 -lrt -pthread
+ *
+ * LD_LIBRARY_PATH=/usr/local/opencv-2.4.13/lib/ ./cli3 
  */
 #include "common.h"
 
