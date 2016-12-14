@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
    int automode= 0;
   while (true) {
 	ch= (cv::waitKey(10) &  0xFF )  ;
-  	if (ch == ' ' || automod == 1 ) {
+  	if (ch == ' ' || automode == 1 ) {
 		shared_image_header->buffPosition=0;
 		while(shared_image_header->buffPosition == 0 ){
 			this_thread::sleep_for(chrono::milliseconds(1));
