@@ -41,14 +41,21 @@ int main(int argc, char* argv[])
    cv::Mat LocalFrame;
    shared.copyTo(LocalFrame);
    int automode= 0;
+   unsigned long nrto=0; // number of timeouts.
   while (true) {
 	ch= (cv::waitKey(10) &  0xFF )  ;
   	if (ch == ' ' || automode == 1 ) {
 		shared_image_header->buffPosition=0;
+		int timeout=100;
 		while(shared_image_header->buffPosition == 0 ){
 			this_thread::sleep_for(chrono::milliseconds(1));
+			timeout--;
+			if (timeout == 0) {
+                                nrto++;
+                                break;
+                        }
 		}
-		shared.copyTo(LocalFrame);
+		if (timeout > 0 ) shared.copyTo(LocalFrame);
 	}
 
   	if (ch == 'a' ){
@@ -64,6 +71,7 @@ int main(int argc, char* argv[])
     cv::imshow("Client Window", LocalFrame);
   }
 
+  cerr << "Number of timeouts: " << nrto << endl;
   return 0;
 
 }
