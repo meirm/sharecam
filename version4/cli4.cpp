@@ -1,6 +1,8 @@
+#include <boost/program_options.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <iostream>
 #include <chrono>
 #include <thread>
@@ -18,8 +20,45 @@
  */
 #include "common.h"
 using namespace std;
+namespace po = boost::program_options;
+float fxfy = 1.0;
+
+void init_prog(int ac, char * av[] ){
+try {
+        po::options_description desc("Allowed options");
+        desc.add_options()
+            ("help", "produce help message")
+            ("resize", po::value<float>(), "set resize <N>")
+        ;
+
+        po::variables_map vm;
+        po::store(po::parse_command_line(ac, av, desc), vm);
+        po::notify(vm);
+
+        if (vm.count("help")) {
+            cout << desc << "\n";
+            exit(0);
+	}
+        if (vm.count("resize")) {
+            cout << "window size set to "
+                 << vm["resize"].as<float>() << ".\n";
+		fxfy=vm["resize"].as<float>();
+        } else {
+            cout << "resize was not set. Using default\n";
+        }
+    }
+    catch(exception& e) {
+        cerr << "error: " << e.what() << "\n";
+        exit(1);
+    }
+    catch(...) {
+        cerr << "Exception of unknown type!\n";
+    }
+}
+
 int main(int argc, char* argv[])
 {
+  init_prog(argc, argv);
   namespace ip  = boost::interprocess;
 
   // Open Shared Memory Manager
@@ -39,7 +78,8 @@ int main(int argc, char* argv[])
 
    char ch;
    cv::Mat LocalFrame;
-   shared.copyTo(LocalFrame);
+   //shared.copyTo(LocalFrame);
+   LocalFrame.create(480,640,3);
    int automode= 0;
    unsigned long nrto=0; // number of timeouts.
   while (true) {
@@ -51,9 +91,9 @@ int main(int argc, char* argv[])
 			this_thread::sleep_for(chrono::milliseconds(1));
 			timeout--;
 			if (timeout == 0) {
-                                nrto++;
-                                break;
-                        }
+				nrto++;
+				break;
+			}
 		}
 		if (timeout > 0 ) shared.copyTo(LocalFrame);
 	}
@@ -68,9 +108,15 @@ int main(int argc, char* argv[])
 	//if (ch < 255 ) cout << "c=" << int(ch) << endl;
     // Spinning until shared image buffPosition is updated
     // Update Version and show image.
-    cv::imshow("Client Window", LocalFrame);
+    if (fxfy != 1.0){
+	    cv::Mat ReducedFrame;
+	    cv::resize(LocalFrame,ReducedFrame,cv::Size(),fxfy,fxfy);
+	    cv::imshow("Client Window", ReducedFrame);
+    }else{
+	    cv::imshow("Client Window", LocalFrame);
+    }
   }
-
+  
   cerr << "Number of timeouts: " << nrto << endl;
   return 0;
 
