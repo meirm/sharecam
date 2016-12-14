@@ -22,6 +22,7 @@
 using namespace std;
 namespace po = boost::program_options;
 float fxfy = 1.0;
+float maxfps = 30.0;
 
 void init_prog(int ac, char * av[] ){
 try {
@@ -29,6 +30,7 @@ try {
         desc.add_options()
             ("help", "produce help message")
             ("resize", po::value<float>(), "set resize <N>")
+            ("maxfps", po::value<float>(), "set resize <N>")
         ;
 
         po::variables_map vm;
@@ -39,6 +41,14 @@ try {
             cout << desc << "\n";
             exit(0);
 	}
+        if (vm.count("maxfps")) {
+            cout << "maxfps size set to "
+                 << vm["maxfps"].as<float>() << ".\n";
+		maxfps=vm["maxfps"].as<float>();
+        } else {
+            cout << "maxfps was not set. Defaulting to 30.0 fps\n";
+        }
+
         if (vm.count("resize")) {
             cout << "window size set to "
                  << vm["resize"].as<float>() << ".\n";
@@ -82,6 +92,8 @@ int main(int argc, char* argv[])
    LocalFrame.create(480,640,3);
    int automode= 0;
    unsigned long nrto=0; // number of timeouts.
+   int waitperiod = 1000 / maxfps;
+   if (waitperiod == 0 ) waitperiod =1;
   while (true) {
 	ch= (cv::waitKey(10) &  0xFF )  ;
   	if (ch == ' ' || automode == 1 ) {
@@ -115,6 +127,8 @@ int main(int argc, char* argv[])
     }else{
 	    cv::imshow("Client Window", LocalFrame);
     }
+    
+	this_thread::sleep_for(chrono::milliseconds(waitperiod));
   }
   
   cerr << "Number of timeouts: " << nrto << endl;
