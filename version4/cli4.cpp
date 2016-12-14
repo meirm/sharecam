@@ -12,7 +12,7 @@
  * g++ -Wall -o "cli4" cli4.o -I /usr/include/boost  `pkg-config --libs --cflags opencv` -std=gnu++11 -lrt -pthread
  *
  * g++ -Wall  -c  cli4.cpp
- * g++ -o  cli4  -I /usr/local/opencv-2.4.13/include -O2 -g -Wall cli4.cpp -L /usr/local/opencv-2.4.13/lib -lopencv_core  -lopencv_imgcodecs -lopencv_videoio -lopencv_highgui -lopencv_video  -lopencv_photo  -std=gnu++11  -lboost_program_options -std=gnu++11 -lrt -pthread
+ * g++ -o  cli4  -I /usr/local/opencv-2.4.13/include -O2 -g -Wall cli4.cpp -L /usr/local/opencv-2.4.13/lib -lopencv_core  -lopencv_imgcodecs -lopencv_videoio -lopencv_highgui -lopencv_video  -lopencv_photo -lopencv_imgproc -std=gnu++11  -lboost_program_options -std=gnu++11 -lrt -pthread
  *
  * LD_LIBRARY_PATH=/usr/local/opencv-2.4.13/lib/ ./cli4 
  */
@@ -40,9 +40,10 @@ int main(int argc, char* argv[])
    char ch;
    cv::Mat LocalFrame;
    shared.copyTo(LocalFrame);
+   int automode= 0;
   while (true) {
 	ch= (cv::waitKey(10) &  0xFF )  ;
-  	if (ch == ' ' ) {
+  	if (ch == ' ' || automod == 1 ) {
 		shared_image_header->buffPosition=0;
 		while(shared_image_header->buffPosition == 0 ){
 			this_thread::sleep_for(chrono::milliseconds(1));
@@ -50,7 +51,10 @@ int main(int argc, char* argv[])
 		shared.copyTo(LocalFrame);
 	}
 
-  	if (ch == 'q' ){
+  	if (ch == 'a' ){
+		automode = 1 - automode;
+	}
+	else if (ch == 'q' || ch == 27 ){
 		shared_image_header->buffPosition = 2;
 	       	break;
 	}
