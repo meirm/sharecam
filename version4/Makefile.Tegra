@@ -7,6 +7,11 @@ cli4: cli4.cpp
 srv4: srv4.cpp
 	g++ -o  srv4 srv4.cpp -I /usr/local/opencv-2.4.13/include -O2 -g -Wall -L /usr/local/opencv-2.4.13/lib -lopencv_core  -lopencv_imgcodecs -lopencv_videoio -lopencv_highgui -lopencv_video  -lopencv_photo -lopencv_imgproc  -std=gnu++11  -lboost_program_options -std=gnu++11 -lrt -pthread
 
+install: srv4 cli4 srv4.sh cli4.sh 
+	mkdir -p /usr/local/share/riunx/sharedcam/bin
+	cp srv4 cli4 /usr/local/share/riunx/sharedcam/bin/
+	cp srv4.sh cli4.sh /usr/local/bin
+
 clean:
 	rm srv4 cli4
 
