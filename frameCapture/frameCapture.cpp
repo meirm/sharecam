@@ -25,7 +25,7 @@ namespace po = boost::program_options;
 int videoport =0;
 int x=800;
 int y=600;
-int fps=30;
+int frames=2;
 String output;
 int verbose=0;
 void init_prog(int ac, char * av[] ){
@@ -36,7 +36,7 @@ try {
             ("video", po::value<int>(), "set video device <N>")
             ("xres", po::value<int>(), "x resolution")
             ("yres", po::value<int>(), "y resolution")
-            ("fps", po::value<int>(), "fps")
+            ("frames", po::value<int>(), "frames")
             ("verbose", po::value<int>(), "verbose")
             ("output", po::value<string>(), "outputFile")
         ;
@@ -77,12 +77,12 @@ try {
            if (verbose) cout << "INFO: yres was not set. Using default\n";
 	}
         
-        if (vm.count("fps")) {
-           if (verbose) cout << "INFO: fps set to "
-                 << vm["fps"].as<int>() << ".\n";
-		fps=vm["fps"].as<int>();
+        if (vm.count("frames")) {
+           if (verbose) cout << "INFO: frames set to "
+                 << vm["frames"].as<int>() << ".\n";
+		frames=vm["frames"].as<int>();
         } else {
-           if (verbose) cout << "INFO: fps was not set. Using default\n";
+           if (verbose) cout << "INFO: frames was not set. Using default\n";
 	}
 
         if (vm.count("output")) {
@@ -128,13 +128,15 @@ int main(int argc, char* argv[])
   cv::Mat  captured_image;
     //capture_device.grab();
     //capture_device.retrieve(captured_image) ;
-    capture_device >> captured_image;
-    if(captured_image.empty()){
-	errcode =3;
-	exit(errcode);
-    }else if (captured_image.rows != y || captured_image.cols != x){
-	errcode =4;
-	exit(errcode);
+    for (int i=0; i < frames; i++){
+	    capture_device >> captured_image;
+	    if(captured_image.empty()){
+		errcode =3;
+		exit(errcode);
+	    }else if (captured_image.rows != y || captured_image.cols != x){
+		errcode =4;
+		exit(errcode);
+	    }
     }
 	cv::imwrite(output,captured_image);
 
